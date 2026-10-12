@@ -123,29 +123,48 @@ func agentThreadPrompt(messages []ChatMessage) string {
 	return prompt.String()
 }
 
-func agentThreadBody(acc *Account, messages []ChatMessage) map[string]interface{} {
+// agentThreadModelID resolves only verified Agent protocol model selections.
+// Avoid the legacy family fallback: an Opus 5.5 request must never become 4.6.
+func agentThreadModelID(model string) (string, error) {
+	switch strings.ToLower(strings.TrimSpace(model)) {
+	case "auto":
+		return "", nil
+	case "opus-5.5", "claude-opus-5-5", "claude-opus-5.5", "albuquerque-quinn":
+		return "albuquerque-quinn", nil
+	default:
+		return "", fmt.Errorf("unsupported Notion Agent model %q; use auto or opus-5.5", model)
+	}
+}
+
+func agentThreadBody(acc *Account, messages []ChatMessage, notionModel string) map[string]interface{} {
 	// All turns are fresh threads. Claude Code carries the full conversation,
 	// including locally executed tool results, in these messages.
 	prompt := agentThreadPrompt(messages)
-	return map[string]interface{}{
+	body := map[string]interface{}{
 		"type": "personal_agent", "spaceId": acc.SpaceID, "threadId": generateUUIDv4(), "clientMessageId": generateUUIDv4(),
 		"createdSource": "full_page_chat", "content": []interface{}{map[string]interface{}{"type": "text", "text": [][]string{{prompt}}}},
 		"agentMemorySettings": map[string]bool{"useMemories": false, "excludeChatFromMemories": true},
 		"browserEnabled":      false, "enableSuggestedEditsTools": false, "policies": map[string]string{"approval_mode": "ask"},
 	}
+	if notionModel != "" {
+		body["model"] = notionModel
+		body["reasoningEffort"] = "medium"
+	}
+	return body
 }
 
 func callAgentThreadInference(acc *Account, messages []ChatMessage, model string, cb StreamCallback, opt CallOptions) error {
-	if !strings.EqualFold(model, "auto") {
-		return fmt.Errorf("Notion Agent transport currently supports model auto only")
+	notionModel, err := agentThreadModelID(model)
+	if err != nil {
+		return err
 	}
 	if len(opt.Attachments) > 0 {
 		return fmt.Errorf("Notion Agent transport does not support attachments")
 	}
-	return callAgentThreadWithClient(acc, messages, cb, getChromeHTTPClient(AppConfig.InferenceTimeoutDuration()))
+	return callAgentThreadWithClient(acc, messages, notionModel, cb, getChromeHTTPClient(AppConfig.InferenceTimeoutDuration()))
 }
 
-func callAgentThreadWithClient(acc *Account, messages []ChatMessage, cb StreamCallback, client *http.Client) error {
+func callAgentThreadWithClient(acc *Account, messages []ChatMessage, notionModel string, cb StreamCallback, client *http.Client) error {
 	timeout := AppConfig.InferenceTimeoutDuration()
 	if timeout <= 0 {
 		return fmt.Errorf("Notion Agent inference timeout must be positive")
@@ -186,7 +205,7 @@ func callAgentThreadWithClient(acc *Account, messages []ChatMessage, cb StreamCa
 		}
 		return nil
 	}
-	body := agentThreadBody(acc, messages)
+	body := agentThreadBody(acc, messages, notionModel)
 	if err := post("createAgentThread", body, nil); err != nil {
 		return err
 	}

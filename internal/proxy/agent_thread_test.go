@@ -55,6 +55,31 @@ func TestAgentThreadOptInAndLoopbackConfiguration(t *testing.T) {
 	}
 }
 
+func TestAgentThreadOpus55SelectionMatchesObservedBrowserRequest(t *testing.T) {
+	for _, alias := range []string{"opus-5.5", "claude-opus-5-5", "claude-opus-5.5", "albuquerque-quinn"} {
+		id, err := agentThreadModelID(alias)
+		if err != nil || id != "albuquerque-quinn" {
+			t.Fatalf("%q resolved to %q: %v", alias, id, err)
+		}
+		body := agentThreadBody(&Account{SpaceID: "space"}, nil, id)
+		if body["model"] != "albuquerque-quinn" || body["reasoningEffort"] != "medium" {
+			t.Fatal("explicit model selection did not match captured protocol")
+		}
+	}
+	if _, err := agentThreadModelID("opus-5.6"); err == nil {
+		t.Fatal("unknown Opus alias silently fell back to an older model")
+	}
+	old := AppConfig
+	AppConfig = DefaultConfig()
+	AppConfig.Proxy.AgentThread = true
+	defer func() { AppConfig = old }()
+	tools := []Tool{{Function: ToolFunction{Name: "Read", Parameters: map[string]interface{}{"type": "object"}}}}
+	messages := injectToolsIntoMessages([]ChatMessage{{Role: "user", Content: "read"}}, tools, "opus-5.5", nil)
+	if len(messages) != 2 || !strings.Contains(messages[0].Content, "LOCAL ACTION PROTOCOL") {
+		t.Fatal("Opus selection did not use the verified local tool bridge")
+	}
+}
+
 func TestAgentTranscriptUpdatesRemovalsOrdering(t *testing.T) {
 	var page agentTranscriptPage
 	raw := `{"type":"agent_service_transcript_page","session":{"status":"idle"},"patches":[{"op":"put","entity":{"id":"b","kind":"assistant_message","sequence":4,"content":[{"type":"text","text":"stale"}]}},{"op":"put","entity":{"id":"a","kind":"assistant_message","sequence":2,"content":[{"type":"text","text":"first"}]}},{"op":"put","entity":{"id":"b","kind":"assistant_message","sequence":4,"content":[{"type":"text","text":"last"}]}},{"op":"put","entity":{"id":"x","kind":"assistant_message","content":[{"type":"text","text":"removed"}]}},{"op":"remove","id":"x"},{"op":"put","entity":{"id":"done","kind":"turn_completed","stop_reason":"end_turn"}}]}`
@@ -73,8 +98,8 @@ func TestAgentTranscriptUpdatesRemovalsOrdering(t *testing.T) {
 
 func TestAgentThreadBodyAutoHistoryAndFreshThreads(t *testing.T) {
 	messages := []ChatMessage{{Role: "user", Content: "read file"}, {Role: "tool", ToolCallID: "call", Content: "file body"}}
-	a := agentThreadBody(&Account{SpaceID: "space"}, messages)
-	b := agentThreadBody(&Account{SpaceID: "space"}, messages)
+	a := agentThreadBody(&Account{SpaceID: "space"}, messages, "")
+	b := agentThreadBody(&Account{SpaceID: "space"}, messages, "")
 	if _, ok := a["model"]; ok {
 		t.Fatal("Auto must omit model")
 	}
@@ -125,14 +150,14 @@ func TestAgentThreadTransportBoundedAndCompleted(t *testing.T) {
 	NotionAPIBase = server.URL
 	started := time.Now()
 	called := false
-	err := callAgentThreadWithClient(&Account{}, nil, func(string, bool, *UsageInfo) { called = true }, server.Client())
+	err := callAgentThreadWithClient(&Account{}, nil, "", func(string, bool, *UsageInfo) { called = true }, server.Client())
 	if err == nil || called || time.Since(started) > 3*time.Second {
 		t.Fatalf("deadline failed %v, called=%v", err, called)
 	}
 	complete = true
 	var output string
 	var done bool
-	if err := callAgentThreadWithClient(&Account{}, nil, func(text string, finished bool, _ *UsageInfo) { output += text; done = finished }, server.Client()); err != nil {
+	if err := callAgentThreadWithClient(&Account{}, nil, "", func(text string, finished bool, _ *UsageInfo) { output += text; done = finished }, server.Client()); err != nil {
 		t.Fatal(err)
 	}
 	if output != "answer" || !done {

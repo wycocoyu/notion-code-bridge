@@ -76,7 +76,22 @@ Read-based local skill loading with a user-owned account. These do not establish
 long-context compression, concurrent/resumed-session reliability, or which
 vendor model Auto selected. No credentials or private captures are included.
 
-Only Auto is supported. Attachments and transcript pages requiring pagination
+Auto and Opus 5.5 are supported. Attachments and transcript pages requiring pagination
 are rejected. Output is collected before Anthropic SSE delivery, so upstream
 token-by-token streaming is not implemented. Code/conversation context is sent
 to Notion. This bridge is experimental, not a complete native Claude API.
+
+## Explicit Opus 5.5 selection
+
+```bash
+python claude-notion.py --model opus-5.5
+```
+
+Supported aliases are `opus-5.5`, `claude-opus-5-5`, `claude-opus-5.5` and the
+observed Notion ID `albuquerque-quinn`. The Agent request sends that exact ID
+and `reasoningEffort: medium`, matching the observed browser selection.
+Unknown models are rejected; this route does not use the legacy family fallback.
+Auto continues to omit the model field. Availability and allowance remain
+controlled by the selected Notion account/workspace; listing a model alone does
+not prove inference access. The user's upgraded account was verified with a
+selected Opus 5.5 browser request and a completed answer.
