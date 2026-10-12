@@ -37,7 +37,7 @@ server:
     # If empty, a random password will be generated and printed to console.
     admin_password: ""
 proxy:
-    # Opt in to the current personal Agent protocol (Auto only).
+    # Opt in to the current personal Agent protocol (Auto or Opus 5.5).
     agent_thread: false
     # Notion API base URL
     notion_api_base: "https://www.notion.so/api/v3"

@@ -45,7 +45,7 @@ type ServerConfig struct {
 }
 
 type ProxyConfig struct {
-	AgentThread           bool   `yaml:"agent_thread"` // Current Notion personal Agent transport (Auto only).
+	AgentThread           bool   `yaml:"agent_thread"` // Current Notion personal Agent transport.
 	NotionAPIBase         string `yaml:"notion_api_base"`
 	ClientVersion         string `yaml:"client_version"`
 	DefaultModel          string `yaml:"default_model"`
