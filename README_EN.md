@@ -27,7 +27,7 @@
 
 ---
 
-> Personal development fork of [SleepingBag945/notion_manager](https://github.com/SleepingBag945/notion_manager). Notion Code Bridge focuses on connecting Notion Auto to local Claude Code. See [AGENT_THREAD.md](AGENT_THREAD.md) for the experimental protocol, launcher, local skills and limitations.
+> Personal development fork of [SleepingBag945/notion_manager](https://github.com/SleepingBag945/notion_manager). Notion Code Bridge focuses on connecting Notion Auto to local Claude Code. The current personal Agent protocol supports Auto and Opus 5.5, subject to account permissions. See [AGENT_THREAD.md](AGENT_THREAD.md) for the experimental protocol, launcher, local skills and limitations.
 
 
 <p align="center">

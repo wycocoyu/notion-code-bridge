@@ -23,7 +23,7 @@ Notion Code Bridge 将 Notion AI 的请求和响应转换为本地编程客户�
 - **账号管理**：保留账号池、额度刷新和 Dashboard。
 - **其他客户端**：保留 OpenAI Chat Completions、Responses 等兼容入口。
 
-当前个人 Agent 新协议使用 **Auto**。实际可用模型和额度取决于账号、工作区和 Notion 当前策略。
+当前个人 Agent 新协议支持 **Auto 和 Opus 5.5**。实际可用模型和额度取决于账号、工作区和 Notion 当前策略。
 开通 Business 不代表本代理已支持指定所有模型，也不代表可以无限调用。
 
 ## 快速开始
@@ -79,6 +79,12 @@ cd /path/to/your/project
 
 启动器会在需要时启动本地代理，并使用当前目录作为 Claude Code 工作目录。
 它采用 bare 模式和基础本地工具；插件、hooks、外部 MCP 和自动 `CLAUDE.md` 发现尚未启用。
+
+账号具有权限时，可以显式选择 Opus 5.5：
+
+```bash
+python claude-notion.py --model opus-5.5
+```
 
 ## 会话和使用边界
 
