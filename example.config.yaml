@@ -2,6 +2,8 @@
 # Values here override defaults; environment variables override config.yaml.
 
 server:
+    # Optional listen host (env: HOST). Empty preserves the all-interface default.
+    host: ""
     # Listen port (env: PORT)
     port: "3000"
     # Accounts directory path
@@ -35,6 +37,8 @@ server:
     # If empty, a random password will be generated and printed to console.
     admin_password: ""
 proxy:
+    # Opt in to the current personal Agent protocol (Auto only).
+    agent_thread: false
     # Notion API base URL
     notion_api_base: "https://www.notion.so/api/v3"
     # Notion client version sent in headers

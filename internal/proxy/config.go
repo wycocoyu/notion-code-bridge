@@ -29,6 +29,7 @@ type Config struct {
 }
 
 type ServerConfig struct {
+	Host          string `yaml:"host"` // Empty preserves the existing all-interface listener.
 	Port          string `yaml:"port"`
 	AccountsDir   string `yaml:"accounts_dir"`
 	TokenFile     string `yaml:"token_file"`
@@ -44,6 +45,7 @@ type ServerConfig struct {
 }
 
 type ProxyConfig struct {
+	AgentThread           bool   `yaml:"agent_thread"` // Current Notion personal Agent transport (Auto only).
 	NotionAPIBase         string `yaml:"notion_api_base"`
 	ClientVersion         string `yaml:"client_version"`
 	DefaultModel          string `yaml:"default_model"`
@@ -193,6 +195,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 
 	// Step 2: Environment variables override config.yaml values
+	if v := os.Getenv("HOST"); v != "" {
+		cfg.Server.Host = v
+	}
 	if v := os.Getenv("PORT"); v != "" {
 		cfg.Server.Port = v
 	}
@@ -225,6 +230,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	}
 	if v := os.Getenv("DUMP_API_INPUT"); v != "" {
 		cfg.Server.DumpAPIInput = strings.EqualFold(v, "true") || v == "1"
+	}
+	if v := os.Getenv("AGENT_THREAD"); v != "" {
+		cfg.Proxy.AgentThread = strings.EqualFold(v, "true") || v == "1"
 	}
 	if v := os.Getenv("NOTION_API_BASE"); v != "" {
 		cfg.Proxy.NotionAPIBase = v
