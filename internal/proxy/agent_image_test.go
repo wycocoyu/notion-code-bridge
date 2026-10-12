@@ -2,9 +2,11 @@ package proxy
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -62,6 +64,27 @@ func TestAgentImageUploadRejectsNonImageBeforeNetwork(t *testing.T) {
 	}
 }
 
+type failedSignedUploadTransport struct{}
+
+func (failedSignedUploadTransport) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, &url.Error{Op: "Put", URL: "https://storage.test/?signature=secret", Err: errors.New("connection reset")}
+}
+
+func TestAgentImageUploadFailureDoesNotExposeSignedURL(t *testing.T) {
+	oldCfg, oldBase := AppConfig, NotionAPIBase
+	AppConfig = DefaultConfig()
+	defer func() { AppConfig, NotionAPIBase = oldCfg, oldBase }()
+	api := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, `{"type":"file_upload_url","file":{"id":"file-id"},"upload":{"type":"single_part","method":"PUT","url":"https://storage.test/?signature=secret","headers":{}}}`)
+	}))
+	defer api.Close()
+	NotionAPIBase = api.URL
+	_, err := uploadAgentImageWithClients(&Account{}, &FileAttachment{ContentType: "image/png", Data: []byte("png")}, api.Client(), &http.Client{Transport: failedSignedUploadTransport{}})
+	if err == nil || strings.Contains(err.Error(), "signature") || strings.Contains(err.Error(), "secret") {
+		t.Fatalf("signed URL was exposed: %v", err)
+	}
+}
+
 func TestAgentThreadImageReferencesReachCreateRequest(t *testing.T) {
 	oldCfg, oldBase := AppConfig, NotionAPIBase
 	AppConfig = DefaultConfig()
@@ -87,7 +110,7 @@ func TestAgentThreadImageReferencesReachCreateRequest(t *testing.T) {
 	}))
 	defer api.Close()
 	NotionAPIBase = api.URL
-	err := callAgentThreadWithClient(&Account{}, nil, "", func(string, bool, *UsageInfo) {}, api.Client(), UploadedAttachment{AgentFileID: "image-file"})
+	err := callAgentThreadWithClient(&Account{}, nil, "", "", func(string, bool, *UsageInfo) {}, api.Client(), UploadedAttachment{AgentFileID: "image-file"})
 	if err != nil || !created {
 		t.Fatalf("%v created=%v", err, created)
 	}

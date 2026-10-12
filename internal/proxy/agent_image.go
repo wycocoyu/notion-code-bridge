@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -98,7 +99,16 @@ func uploadAgentImageWithClients(acc *Account, file *FileAttachment, api, storag
 	}
 	resp, err := storage.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Agent signed upload failed")
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			// Exclude the credential-bearing signed URL from diagnostics.
+			cause := urlErr.Err
+			for errors.As(cause, &urlErr) {
+				cause = urlErr.Err
+			}
+			return nil, fmt.Errorf("Agent signed upload failed: %v", cause)
+		}
+		return nil, fmt.Errorf("Agent signed upload failed (%T)", err)
 	}
 	resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
