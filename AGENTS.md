@@ -1,6 +1,6 @@
 # Notion Code Bridge development
 
-This is the user's personal development fork of SleepingBag945/notion_manager.
+This is the user's independently maintained project, originally forked from SleepingBag945/notion_manager.
 Read README.md and AGENT_THREAD.md before changing the integration.
 
 - `origin` is wycocoyu/notion-code-bridge. `upstream` is the original project.

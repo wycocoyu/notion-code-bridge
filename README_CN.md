@@ -20,14 +20,14 @@
   </p>
 
   <p>
-    <a href="./README.md">English</a> |
+    <a href="./README_EN.md">English</a> |
     <strong>简体中文</strong>
   </p>
 </div>
 
 ---
 
-> 基于 [SleepingBag945/notion_manager](https://github.com/SleepingBag945/notion_manager) 的个人开发 fork，后续功能在本仓库实现。重点是 Notion Auto → 本地 Claude Code。新协议、启动器、skills 与限制见 [AGENT_THREAD.md](AGENT_THREAD.md)。
+> 本页保留管理面板与旧协议的详细说明。Notion Business 接入本地 Claude Code 的最新入口见 [中文首页](README.md)，新协议及限制见 [AGENT_THREAD.md](AGENT_THREAD.md)。
 
 
 <p align="center">
