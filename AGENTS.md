@@ -8,7 +8,7 @@ Read README.md and AGENT_THREAD.md before changing the integration.
 - Work on named `codex/` branches and deliver through pull requests. Never push
   master/main directly. Send upstream changes only when the user explicitly asks.
 - Check the branch, HEAD and dirty state before editing; preserve unrelated work.
-- Personal Agent transport is opt-in and Auto-only. Each inference creates a new
+- Personal Agent transport is opt-in and supports Auto plus Opus 5.5. Each inference creates a new
   Notion thread carrying client history; it does not resume the same web chat.
 - Local skills are indexed and read from original sources. Read-based loading is
   verified; native Skill/slash-command support is unverified.

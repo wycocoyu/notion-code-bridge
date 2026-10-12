@@ -408,7 +408,7 @@ func injectToolsIntoMessages(messages []ChatMessage, tools []Tool, model string,
 		return messages
 	}
 
-	if AppConfig != nil && AppConfig.Proxy.AgentThread && strings.EqualFold(model, "auto") {
+	if _, err := agentThreadModelID(model); AppConfig != nil && AppConfig.Proxy.AgentThread && err == nil {
 		prompt := "LOCAL ACTION PROTOCOL\nThe local client executes the following actions on the user's computer. Emit only a JSON object {\"name\":\"function_name\",\"arguments\":{...}} to request an action, with actual arguments matching its schema. Do not try Notion's hosted filesystem or shell for these paths. Wait for the returned local tool message before claiming a result. Never invent results. If no action is needed, reply normally.\n" + buildOpenAIToolsBlock(tools)
 		if len(toolChoice) > 0 && toolChoice[0] != nil {
 			choice, _ := json.Marshal(toolChoice[0])
