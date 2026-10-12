@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>notion-manager</h1>
+  <h1>Notion Code Bridge</h1>
   <p><strong>Local account pool, dashboard, and protocol proxy for Notion AI</strong></p>
   <p>Run multiple Notion sessions behind one local entrypoint with pooled accounts, quota visibility, a browser dashboard, an Anthropic-compatible API, bulk Microsoft-SSO account provisioning, and Claude Code compatibility.</p>
 
@@ -26,6 +26,9 @@
 </div>
 
 ---
+
+> Personal development fork of [SleepingBag945/notion_manager](https://github.com/SleepingBag945/notion_manager). Notion Code Bridge focuses on connecting Notion Auto to local Claude Code. See [AGENT_THREAD.md](AGENT_THREAD.md) for the experimental protocol, launcher, local skills and limitations.
+
 
 <p align="center">
   <img src="img/dashboard.png" alt="Dashboard" width="900">
@@ -60,8 +63,8 @@ succeeds.
 
 ```bash
 # 1. Clone & run (config auto-generated on first start)
-git clone https://github.com/SleepingBag945/notion_manager.git
-cd notion_manager
+git clone https://github.com/wycocoyu/notion-code-bridge.git
+cd notion-code-bridge
 go run ./cmd/notion-manager
 ```
 

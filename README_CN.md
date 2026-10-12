@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>notion-manager</h1>
+  <h1>Notion Code Bridge</h1>
   <p><strong>Notion AI 多账号池、Dashboard 与本地协议代理</strong></p>
   <p>多账号集中管理：账号池化、额度监控、API 代理、Web 代理、Microsoft SSO 批量注册、上游代理转发，并兼容 Claude Code。</p>
 
@@ -27,6 +27,9 @@
 
 ---
 
+> 基于 [SleepingBag945/notion_manager](https://github.com/SleepingBag945/notion_manager) 的个人开发 fork，后续功能在本仓库实现。重点是 Notion Auto → 本地 Claude Code。新协议、启动器、skills 与限制见 [AGENT_THREAD.md](AGENT_THREAD.md)。
+
+
 <p align="center">
   <img src="img/dashboard.png" alt="Dashboard" width="900">
 </p>
@@ -44,8 +47,8 @@
 
 ```bash
 # 1. 克隆并启动（首次启动自动生成配置）
-git clone https://github.com/SleepingBag945/notion_manager.git
-cd notion_manager
+git clone https://github.com/wycocoyu/notion-code-bridge.git
+cd notion-code-bridge
 go run ./cmd/notion-manager
 ```
 
