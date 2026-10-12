@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -354,7 +355,7 @@ func main() {
 	log.Printf("  GET  /admin/register/jobs/{id}/events (SSE progress)")
 	log.Printf("  GET  /ai                          (Reverse Proxy -> notion.so)")
 
-	if err := http.ListenAndServe(":"+port, cors(apiKeyAuthMiddleware(apiKey, mux))); err != nil {
+	if err := http.ListenAndServe(net.JoinHostPort(cfg.Server.Host, port), cors(apiKeyAuthMiddleware(apiKey, mux))); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

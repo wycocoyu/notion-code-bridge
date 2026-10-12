@@ -1298,6 +1298,9 @@ func CallInference(acc *Account, messages []ChatMessage, model string, disableBu
 	if len(opts) > 0 {
 		opt = opts[0]
 	}
+	if AppConfig != nil && AppConfig.Proxy.AgentThread {
+		return callAgentThreadInference(acc, messages, model, cb, opt)
+	}
 	requestID := opt.RequestID
 	reasoningEffort, err := normalizeReasoningEffort(opt.ReasoningEffort)
 	if err != nil {

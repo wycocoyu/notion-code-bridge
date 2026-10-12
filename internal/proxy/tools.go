@@ -408,6 +408,17 @@ func injectToolsIntoMessages(messages []ChatMessage, tools []Tool, model string,
 		return messages
 	}
 
+	if AppConfig != nil && AppConfig.Proxy.AgentThread && strings.EqualFold(model, "auto") {
+		prompt := "LOCAL ACTION PROTOCOL\nThe local client executes the following actions on the user's computer. Emit only a JSON object {\"name\":\"function_name\",\"arguments\":{...}} to request an action, with actual arguments matching its schema. Do not try Notion's hosted filesystem or shell for these paths. Wait for the returned local tool message before claiming a result. Never invent results. If no action is needed, reply normally.\n" + buildOpenAIToolsBlock(tools)
+		if len(toolChoice) > 0 && toolChoice[0] != nil {
+			choice, _ := json.Marshal(toolChoice[0])
+			prompt += "\nTool choice requested by the local client: " + string(choice) + ". Honor none (no action), required/any (request an action), or a named function/tool (request that action); auto permits normal text or an action.\n"
+		}
+		result := make([]ChatMessage, 0, len(messages)+1)
+		result = append(result, ChatMessage{Role: "system", Content: prompt})
+		return append(result, messages...)
+	}
+
 	// Only Claude models (opus, sonnet, haiku) support format-based tool injection.
 	// Other models lack tested framing and may refuse or produce invalid output.
 	if detectModelFamily(model) != familyAnthropic {
