@@ -445,6 +445,7 @@ type NotionTaskResult struct {
 
 // UploadedAttachment holds the result of a successful Notion file upload
 type UploadedAttachment struct {
+	AgentFileID   string // Current Agent service file reference; not a legacy transcript URL.
 	AttachmentURL string // attachment:UUID:filename
 	FileName      string
 	ContentType   string

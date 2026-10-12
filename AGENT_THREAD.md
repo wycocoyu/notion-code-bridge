@@ -76,8 +76,9 @@ Read-based local skill loading with a user-owned account. These do not establish
 long-context compression, concurrent/resumed-session reliability, or which
 vendor model Auto selected. No credentials or private captures are included.
 
-Auto and Opus 5.5 are supported. Attachments and transcript pages requiring pagination
-are rejected. Output is collected before Anthropic SSE delivery, so upstream
+Auto and Opus 5.5 are supported. PNG, JPEG, GIF and WebP images use the
+current Agent file service. Other documents and transcript pages requiring
+pagination are rejected. Output is collected before Anthropic SSE delivery, so upstream
 token-by-token streaming is not implemented. Code/conversation context is sent
 to Notion. This bridge is experimental, not a complete native Claude API.
 
@@ -95,3 +96,25 @@ Auto continues to omit the model field. Availability and allowance remain
 controlled by the selected Notion account/workspace; listing a model alone does
 not prove inference access. The user's upgraded account was verified with a
 selected Opus 5.5 browser request and a completed answer.
+
+## Images through the personal Agent protocol
+
+Image blocks in Anthropic Messages are uploaded using
+`createAgentServiceFileUploadURL`, a signed PUT, and
+`completeAgentServiceFileUpload`. The resulting `file_id` is included as a
+`type: file` content block in `createAgentThread`. The legacy transcript upload
+path is retained for the legacy transport only.
+
+Only image uploads are enabled for this transport. Notion credentials are never
+sent to the signed storage destination, and storage redirects are refused.
+Uploads have bounded deadlines. The current implementation reuploads images
+present in client history on each inference; no persistent image cache or remote
+file cleanup is implemented yet. Multiple historical images are carried in the
+new request; exact original message-block positions are not preserved by the
+existing text bridge. Those remain explicit follow-up work.
+
+A real Claude Code image request to an isolated proxy read a random marker from
+a locally generated PNG. That marker was not present in the text prompt and
+matched the expected fixture. Other formats are accepted by MIME type but have
+not each received live vision verification. Network failures during signed PUT
+remain possible and are returned as upload errors, not fabricated image replies.

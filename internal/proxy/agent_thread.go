@@ -158,13 +158,15 @@ func callAgentThreadInference(acc *Account, messages []ChatMessage, model string
 	if err != nil {
 		return err
 	}
-	if len(opt.Attachments) > 0 {
-		return fmt.Errorf("Notion Agent transport does not support attachments")
+	for _, attachment := range opt.Attachments {
+		if attachment.AgentFileID == "" {
+			return fmt.Errorf("Notion Agent attachment is missing a service file ID")
+		}
 	}
-	return callAgentThreadWithClient(acc, messages, notionModel, cb, getChromeHTTPClient(AppConfig.InferenceTimeoutDuration()))
+	return callAgentThreadWithClient(acc, messages, notionModel, cb, getChromeHTTPClient(AppConfig.InferenceTimeoutDuration()), opt.Attachments...)
 }
 
-func callAgentThreadWithClient(acc *Account, messages []ChatMessage, notionModel string, cb StreamCallback, client *http.Client) error {
+func callAgentThreadWithClient(acc *Account, messages []ChatMessage, notionModel string, cb StreamCallback, client *http.Client, attachments ...UploadedAttachment) error {
 	timeout := AppConfig.InferenceTimeoutDuration()
 	if timeout <= 0 {
 		return fmt.Errorf("Notion Agent inference timeout must be positive")
@@ -206,6 +208,11 @@ func callAgentThreadWithClient(acc *Account, messages []ChatMessage, notionModel
 		return nil
 	}
 	body := agentThreadBody(acc, messages, notionModel)
+	content := body["content"].([]interface{})
+	for _, attachment := range attachments {
+		content = append(content, map[string]string{"type": "file", "file_id": attachment.AgentFileID})
+	}
+	body["content"] = content
 	if err := post("createAgentThread", body, nil); err != nil {
 		return err
 	}

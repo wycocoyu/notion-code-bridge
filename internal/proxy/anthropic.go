@@ -809,6 +809,16 @@ func HandleAnthropicMessages(pool *AccountPool) http.HandlerFunc {
 
 		// Convert Anthropic messages to internal ChatMessage format
 		messages, fileAttachments := convertAnthropicMessages(req.System, req.Messages)
+		if AppConfig.Proxy.AgentThread {
+			for _, file := range fileAttachments {
+				switch file.ContentType {
+				case "image/png", "image/jpeg", "image/gif", "image/webp":
+				default:
+					writeAnthropicError(w, requestID, http.StatusBadRequest, "Agent transport currently accepts image attachments only", "invalid_request_error")
+					return
+				}
+			}
+		}
 		if len(fileAttachments) > 0 {
 			log.Printf("[upload-debug] extracted %d file attachment(s) from request", len(fileAttachments))
 		}
@@ -1064,7 +1074,13 @@ func HandleAnthropicMessages(pool *AccountPool) http.HandlerFunc {
 					target := uploadPlan[i]
 					log.Printf("[upload-debug] %s: uploading attachment %d/%d: %s (%s, %d bytes)",
 						requestID, i+1, len(fileAttachments), fa.FileName, fa.ContentType, len(fa.Data))
-					uploaded, err := UploadFileToNotionThread(acc, &fa, target.ThreadID, target.CreateThread)
+					var uploaded *UploadedAttachment
+					var err error
+					if AppConfig.Proxy.AgentThread {
+						uploaded, err = uploadAgentImage(acc, &fa)
+					} else {
+						uploaded, err = UploadFileToNotionThread(acc, &fa, target.ThreadID, target.CreateThread)
+					}
 					if err != nil {
 						log.Printf("[upload] %s: attachment %d upload failed: %v", requestID, i+1, err)
 						writeAnthropicError(w, requestID, http.StatusBadGateway, "file upload failed: "+err.Error(), "api_error")
