@@ -150,14 +150,14 @@ func TestAgentThreadTransportBoundedAndCompleted(t *testing.T) {
 	NotionAPIBase = server.URL
 	started := time.Now()
 	called := false
-	err := callAgentThreadWithClient(&Account{}, nil, "", func(string, bool, *UsageInfo) { called = true }, server.Client())
+	err := callAgentThreadWithClient(&Account{}, nil, "", "", func(string, bool, *UsageInfo) { called = true }, server.Client())
 	if err == nil || called || time.Since(started) > 3*time.Second {
 		t.Fatalf("deadline failed %v, called=%v", err, called)
 	}
 	complete = true
 	var output string
 	var done bool
-	if err := callAgentThreadWithClient(&Account{}, nil, "", func(text string, finished bool, _ *UsageInfo) { output += text; done = finished }, server.Client()); err != nil {
+	if err := callAgentThreadWithClient(&Account{}, nil, "", "", func(text string, finished bool, _ *UsageInfo) { output += text; done = finished }, server.Client()); err != nil {
 		t.Fatal(err)
 	}
 	if output != "answer" || !done {
@@ -197,5 +197,34 @@ func TestAgentThreadToolChoiceAndSchemaPreserved(t *testing.T) {
 		if !strings.Contains(prompt, want) {
 			t.Errorf("missing %q", want)
 		}
+	}
+}
+
+func TestAgentThreadAutoLowEffortReachesUpstream(t *testing.T) {
+	oldCfg, oldBase := AppConfig, NotionAPIBase
+	AppConfig = DefaultConfig()
+	defer func() { AppConfig, NotionAPIBase = oldCfg, oldBase }()
+	checked := false
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "createAgentThread") {
+			var body map[string]interface{}
+			json.NewDecoder(r.Body).Decode(&body)
+			if body["reasoningEffort"] != "low" {
+				t.Error("low effort was lost")
+			}
+			if _, ok := body["model"]; ok {
+				t.Error("Auto gained an explicit model")
+			}
+			checked = true
+			w.Write([]byte(`{}`))
+		} else {
+			w.Write([]byte(capturedShape))
+		}
+	}))
+	defer server.Close()
+	NotionAPIBase = server.URL
+	err := callAgentThreadWithClient(&Account{}, nil, "", "low", func(string, bool, *UsageInfo) {}, server.Client())
+	if err != nil || !checked {
+		t.Fatalf("%v checked=%v", err, checked)
 	}
 }

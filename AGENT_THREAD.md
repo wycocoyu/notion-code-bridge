@@ -84,6 +84,12 @@ to Notion. This bridge is experimental, not a complete native Claude API.
 
 ## Explicit Opus 5.5 selection
 
+For inexpensive validation, prefer `--model auto --effort low`. Client
+`output_config.effort` is forwarded to the Agent's `reasoningEffort` field.
+`none`/`minimal` map to `low`; an omitted effort retains the previous default.
+Auto selects its own vendor model, so its price cannot be guaranteed from the
+client alias alone. Do not use Opus in routine tests unless explicitly requested.
+
 ```bash
 python claude-notion.py --model opus-5.5
 ```
