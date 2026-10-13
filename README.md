@@ -1,3 +1,8 @@
+> **本仓库已停止维护，后续开发已迁移。**
+>
+> 最新代码、文档、版本发布和问题反馈请前往 **[cocoyu-workspace/notion-code-bridge](https://github.com/cocoyu-workspace/notion-code-bridge)**。
+> 本仓库仅保留历史记录，将归档为只读。请在新仓库提交 Issue / PR，并重新 Star 或 Watch 新仓库。
+
 <div align="center">
   <h1>Notion Code Bridge</h1>
   <p><strong>将 Notion AI 接入本地 Claude Code</strong></p>
