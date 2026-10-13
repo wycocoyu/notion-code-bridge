@@ -1,3 +1,8 @@
+> **This repository is no longer maintained. Development has moved.**
+>
+> For current code, documentation, releases, and support, visit **[cocoyu-workspace/notion-code-bridge](https://github.com/cocoyu-workspace/notion-code-bridge)**.
+> This repository is retained for historical reference and will be archived as read-only. Please open issues and pull requests, and star or watch the project, in the new repository.
+
 <div align="center">
   <h1>Notion Code Bridge</h1>
   <p><strong>Local account pool, dashboard, and protocol proxy for Notion AI</strong></p>
